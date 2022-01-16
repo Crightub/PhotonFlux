@@ -3,8 +3,8 @@
 import { differenceInSeconds, addMinutes, format } from 'date-fns'
 const axios = require('axios');
 
-const server_url = '/:9494';
-const url_base = '/:9494/charge-thing-2c33963a-b294-581f-5dab-74dd08169898/';
+const server_url = window.location.hostname + ':9494';
+const url_base = window.location.hostname + ':9494/charge-thing-2c33963a-b294-581f-5dab-74dd08169898/';
 const addon_start_charging = 'action/startcharging';
 const addon_get_power_history = 'property/currentchargepowerkwhistory';
 const addon_battery_capacity = 'property/batterycapacitykwh';
