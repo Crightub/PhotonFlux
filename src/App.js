@@ -280,7 +280,7 @@ class App extends React.Component {
 															</defs>
 
 															<XAxis dataKey="time" />
-															<YAxis tickFormatter={kWHFormatter} />
+															<YAxis tickFormatter={kWFormatter} />
 
 															<Tooltip
 																separator=': '
@@ -329,8 +329,8 @@ class App extends React.Component {
 
 }
 
-const kWHFormatter = (value) => {
-	return value + " kWh";
+const kWFormatter = (value) => {
+	return value + " kW";
 }
 
 const marksBatteryStatus = [
