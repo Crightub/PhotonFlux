@@ -1,5 +1,5 @@
 import './App.css';
-import { Paper, Grid, Box, Typography, Button, Container, Stack, Slider, TextField, InputAdornment, FormControl, OutlinedInput } from '@mui/material'
+import { Paper, Grid, Box, Typography, Button, Container, Stack, Slider, Dialog, DialogTitle, DialogActions, DialogContent, TextField, InputAdornment, FormControl, OutlinedInput } from '@mui/material'
 import { Bolt } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area, Tooltip, Legend } from 'recharts';
@@ -50,11 +50,11 @@ class App extends React.Component {
 	handleStartChargingClick = () => {
 
 		//Check for wrong input
-		if(this.state.battery === null || this.state.peak_power === null || this.state.time_completion === null || this.state.car.battery_capacity === 0){
+		if (this.state.battery === null || this.state.peak_power === null || this.state.time_completion === null || this.state.car.battery_capacity === 0) {
 			this.outputErrorMessage();
 			return;
 		} else {
-			this.setState({renderError: false});
+			this.setState({ renderError: false });
 		}
 
 
@@ -73,8 +73,12 @@ class App extends React.Component {
 		this.setState({ renderOutput: true });
 	}
 
-	outputErrorMessage(){
-		this.setState({renderError: true});
+	outputErrorMessage() {
+		this.setState({ renderError: true });
+	}
+
+	handleClose = () => {
+		this.setState({ renderOutput: false });
 	}
 
 	handleBatteryCapcityTextChange = (event) => {
@@ -85,8 +89,8 @@ class App extends React.Component {
 		let battery_percentage = parseInt(event.target.value);
 		this.state.car.battery_status = battery_percentage;
 
-		if(battery_percentage > this.state.battery){
-			this.setState({battery: battery_percentage});
+		if (battery_percentage > this.state.battery) {
+			this.setState({ battery: battery_percentage });
 		}
 	}
 
@@ -105,11 +109,11 @@ class App extends React.Component {
 				<Stack
 					direction="column"
 					justifyContent="flex-start"
-					spacing={4}
-					sx={{ m: 4 }}>
+					spacing={2}
+					sx={{ m: 1 }}>
 
 					<Container maxWidth="sm">
-						<Typography variant="h3" color="textPrimary" align="center">PhotonFlux</Typography>
+						<Typography variant="h5" color="textPrimary" align="center">PhotonFlux</Typography>
 					</Container>
 
 					<Box>
@@ -120,13 +124,47 @@ class App extends React.Component {
 								<Stack
 									direction="column"
 									justifyContent="flex-start"
-									spacing={4}>
+									spacing={2}>
+
 									<Paper elevation={6}>
 										<Box padding={4}>
 											<Stack direction="column"
 												justifyContent="flex-start"
 												alignItems="center"
-												spacing={4}>
+												spacing={3}>
+
+												<Typography variant="h6" color="textPrimary">
+													Car properties
+												</Typography>
+
+
+												<Typography variant="body1" color="textPrimary">
+													Battery capacity
+												</Typography>
+
+
+												<FormControl sx={{ m: 1 }} variant="outlined">
+													<OutlinedInput
+														id="batteryCapacityTxt"
+														placeholder={'90'}
+														onChange={this.handleBatteryCapcityTextChange}
+														endAdornment={<InputAdornment position="end">kWh</InputAdornment>}
+													/>
+												</FormControl>
+
+												<Typography variant="body1" color="textPrimary">
+													Battery percentage
+												</Typography>
+
+
+												<FormControl sx={{ m: 1 }} variant="outlined">
+													<OutlinedInput
+														id="batteryCapacityTxt"
+														placeholder={'20'}
+														onChange={this.handleBatteryPercentageTextChange}
+														endAdornment={<InputAdornment position="end">%</InputAdornment>}
+													/>
+												</FormControl>
 
 												<Typography variant="body1" color="textPrimary">
 													Peak power of photovoltaik system
@@ -197,128 +235,67 @@ class App extends React.Component {
 
 									</Paper>
 
-									<Paper elevation={6}>
-										<Container>
-											<Stack spacing={2} direction="column"
-												justifyContent="flex-start"
-												alignItems="center"
-												sx={{ m: 2 }}>
-												{/* <Typography color="colorPrimary" variant="h3">{this.state.car.brand}</Typography>
-												<Typography color="colorPrimary" variant="body1">{this.state.car.model}</Typography>
-												<Typography color="colorPrimary" variant="body1">Battery capacity: {this.state.car.battery_capacity}kWh</Typography>
-												<Typography color="colorPrimary" variant="body1">Battery status: {this.state.car.battery_status}%</Typography> */}
-												
-												<Typography variant="h6" color="textPrimary">
-													Car properties
-												</Typography>
-
-
-												<Typography variant="body1" color="textPrimary">
-													Battery capacity
-												</Typography>
-
-
-												<FormControl sx={{ m: 1 }} variant="outlined">
-													<OutlinedInput
-														id="batteryCapacityTxt"
-														placeholder={'90'}
-														onChange={this.handleBatteryCapcityTextChange}
-														endAdornment={<InputAdornment position="end">kWh</InputAdornment>}
-													/>
-												</FormControl>
-
-												<Typography variant="body1" color="textPrimary">
-													Battery percentage
-												</Typography>
-
-
-												<FormControl sx={{ m: 1 }} variant="outlined">
-													<OutlinedInput
-														id="batteryCapacityTxt"
-														placeholder={'20'}
-														onChange={this.handleBatteryPercentageTextChange}
-														endAdornment={<InputAdornment position="end">%</InputAdornment>}
-													/>
-												</FormControl>
-											</Stack>
-										</Container>
-									</Paper>
-
-
 								</Stack>
 							</Grid>
 
-							{this.state.renderOutput && (
-								<Grid item xs={12} lg={8}>
-									<Stack spacing={4}>
-										<Paper elevation={6}>
-											<Box padding={2}>
-												<Stack
-													direction="column"
-													justifyContent="flex-start"
-													alignItems="center"
-													spacing={4}>
+							<Dialog fullWidth={true}
+								open={this.state.renderOutput}
+								onClose={this.handleClose}>
+								<DialogTitle>Optimal charging</DialogTitle>
+								<DialogContent>
+									<Box padding={0}>
 
-													<Typography color="colorPrimary" variant="h6">
-														Optimal charging
-													</Typography>
+										<ResponsiveContainer width="100%" height={400}>
+											<AreaChart
+												data={this.state.outputData}
+											>
 
-													<ResponsiveContainer width="100%" height={400}>
-														<AreaChart
-															data={this.state.outputData}
-														>
+												<defs>
+													<linearGradient id="colorGrid" x1="0" y1="0" x2="0" y2="1">
+														<stop offset="5%" stopColor="#edd147" stopOpacity={0.8} />
+														<stop offset="95%" stopColor="#edd147" stopOpacity={0} />
+													</linearGradient>
+													<linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
+														<stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+														<stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+													</linearGradient>
+												</defs>
 
-															<defs>
-																<linearGradient id="colorGrid" x1="0" y1="0" x2="0" y2="1">
-																	<stop offset="5%" stopColor="#edd147" stopOpacity={0.8} />
-																	<stop offset="95%" stopColor="#edd147" stopOpacity={0} />
-																</linearGradient>
-																<linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-																	<stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-																	<stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-																</linearGradient>
-															</defs>
+												<XAxis dataKey="time" />
+												<YAxis tickFormatter={kWHFormatter} />
 
-															<XAxis dataKey="time" />
-															<YAxis tickFormatter={kWHFormatter} />
+												<Tooltip
+													separator=': '
+													contentStyle={{ backgroundColor: "#282c34" }}
+													formatter={function (value, name) {
+														switch (name) {
+															case 'grid': return [`${value} kWh`, 'Grid'];
+															case 'pv': return [`${value} kWh`, 'PV'];
+														}
+														return `${value} kWH`;
+													}}
+													labelFormatter={function (value) {
+														return ``;
+													}} />
 
-															<Tooltip
-																separator=': '
-																contentStyle={{ backgroundColor: "#282c34" }}
-																formatter={function (value, name) {
-																	switch (name) {
-																		case 'grid': return [`${value} kWH`, 'Grid'];
-																		case 'pv': return [`${value} kWH`, 'PV'];
-																	}
-																	return `${value} kWH`;
-																}}
-																labelFormatter={function (value) {
-																	return ``;
-																}} />
+												<Legend verticalAlign="bottom"/>
 
-															<Legend verticalAlign="bottom" />
+												<Area type="monotone" dataKey="grid" stroke="#edd147" fillOpacity={1} fill="url(#colorGrid)" />
+												<Area type="monotone" dataKey="pv" stroke="#82ca9d" fillOpacity={1} fill="url(#colorPv)" />
 
-															<Area type="monotone" dataKey="grid" stroke="#edd147" fillOpacity={1} fill="url(#colorGrid)" />
-															<Area type="monotone" dataKey="pv" stroke="#82ca9d" fillOpacity={1} fill="url(#colorPv)" />
+											</AreaChart>
 
-														</AreaChart>
+										</ResponsiveContainer>
 
-													</ResponsiveContainer>
-												</Stack>
 
-											</Box>
-										</Paper>
+									</Box>
+								</DialogContent>
 
-										<Paper elevation={6}>
-											<Box padding={4}>
+								<DialogActions>
+									<Button onClick={this.handleClose}>Close</Button>
+								</DialogActions>
+							</Dialog>
 
-												<Typography color="colorPrimary" variant="body1">Total grid power used: {this.state.total_power_grid} kWh</Typography>
-												<Typography color="colorPrimary" variant="body1">Total solar power used: {this.state.total_power_solar} kWh</Typography>
-											</Box>
-
-										</Paper>
-									</Stack>
-								</Grid>)}
 						</Grid>
 
 					</Box>

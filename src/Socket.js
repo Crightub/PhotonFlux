@@ -125,7 +125,7 @@ class Socket {
 
         }
 
-        //Transform data into follwing format
+        //Transform data into following format
         //data = [
         // {
         // 	time: '12:00',
