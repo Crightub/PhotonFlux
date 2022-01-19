@@ -3,8 +3,11 @@
 import { differenceInSeconds, addMinutes, format } from 'date-fns'
 const axios = require('axios');
 
-const server_url = 'http://ec2-3-144-135-66.us-east-2.compute.amazonaws.com:9494';
-const url_base = 'http://ec2-3-144-135-66.us-east-2.compute.amazonaws.com:9494/charge-thing-2c33963a-b294-581f-5dab-74dd08169898/';
+const server_url = 'http://' + window.location.hostname + ':9494';
+const url_base = 'http://' +  window.location.hostname + ':9494/charge-thing-2c33963a-b294-581f-5dab-74dd08169898/';
+// const server_url = 'http://ec2-3-138-145-210.us-east-2.compute.amazonaws.com:9494';
+// const url_base = 'http://ec2-3-138-145-210.us-east-2.compute.amazonaws.com:9494/charge-thing-2c33963a-b294-581f-5dab-74dd08169898/';
+
 const addon_start_charging = 'action/startcharging';
 const addon_get_power_history = 'property/currentchargepowerkwhistory';
 const addon_battery_capacity = 'property/batterycapacitykwh';
@@ -35,19 +38,8 @@ class Socket {
             });
     }
 
-    static startChargingProcess(time_completion, battery_start, battery_goal, battery_capacity, pv_power_peak) {
-        //Calculate time until the charging has to be completed in seconds
-        let start = new Date();
-        console.log("start: " + start);
-        console.log("end: " + time_completion);
-        let time_completion_seconds = differenceInSeconds(time_completion, start);
-        console.log(time_completion_seconds);
-
-        if (time_completion_seconds < 0 || battery_goal === battery_start) {
-            console.log("invalid input");
-            return;
-        }
-
+    static startChargingProcess(time_completion_seconds, battery_start, battery_goal, battery_capacity, pv_power_peak) {
+      
         // console.log("Call AI: \nbattery_start: " + battery_start
         //     + "\nbattery_capacity: " + battery_capacity
         //     + "\ntime completion: " + time_completion_seconds

@@ -3,6 +3,7 @@ import { Paper, Grid, Box, Typography, Button, Container, Stack, Slider, Dialog,
 import { Bolt } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area, Tooltip, Legend } from 'recharts';
+import { differenceInSeconds, addMinutes, format } from 'date-fns'
 import React from 'react';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -33,7 +34,8 @@ class App extends React.Component {
 			total_power_grid: 0,
 			total_power_solar: 0,
 
-			renderError: false
+			renderError: false,
+			errorMessage: ""
 		}
 
 	}
@@ -49,16 +51,32 @@ class App extends React.Component {
 
 	handleStartChargingClick = () => {
 
-		//Check for wrong input
 		if (this.state.battery === null || this.state.peak_power === null || this.state.time_completion === null || this.state.car.battery_capacity === 0) {
-			this.outputErrorMessage();
+			this.outputErrorMessage("Please fill out every textfield.");
 			return;
 		} else {
 			this.setState({ renderError: false });
 		}
 
+		let start = new Date();
+        let time_completion_seconds = differenceInSeconds(this.state.time_completion, start);
 
-		Socket.startChargingProcess(this.state.time_completion, this.state.car.battery_status, this.state.battery, this.state.car.battery_capacity, this.state.peak_power)
+        if (time_completion_seconds < 0) {
+            this.outputErrorMessage("Please choose a finish time in the future.");
+			return;
+		} else {
+			this.setState({ renderError: false });
+		}
+
+		if(this.state.battery === this.state.car.battery_status){
+			this.outputErrorMessage("Please choose a higher desired percentage of battery.");
+			return;
+		} else {
+			this.setState({renderError : false});
+		}
+
+
+		Socket.startChargingProcess(time_completion_seconds, this.state.car.battery_status, this.state.battery, this.state.car.battery_capacity, this.state.peak_power)
 			.then(data => {
 				console.log(data);
 				let processedData = Socket.processPowerData(data);
@@ -73,8 +91,8 @@ class App extends React.Component {
 		this.setState({ renderOutput: true });
 	}
 
-	outputErrorMessage() {
-		this.setState({ renderError: true });
+	outputErrorMessage(message) {
+		this.setState({ renderError: true , errorMessage: message});
 	}
 
 	handleClose = () => {
@@ -219,7 +237,7 @@ class App extends React.Component {
 
 												{this.state.renderError && (
 													<Typography variant="body1" color="#f50a35">
-														Please fill out every textfield.
+														{this.state.errorMessage}
 													</Typography>
 												)}
 
@@ -262,7 +280,7 @@ class App extends React.Component {
 												</defs>
 
 												<XAxis dataKey="time" />
-												<YAxis tickFormatter={kWHFormatter} />
+												<YAxis tickFormatter={kWFormatter} />
 
 												<Tooltip
 													separator=': '
@@ -272,7 +290,7 @@ class App extends React.Component {
 															case 'grid': return [`${value} kWh`, 'Grid'];
 															case 'pv': return [`${value} kWh`, 'PV'];
 														}
-														return `${value} kWH`;
+														return `${value} kWh`;
 													}}
 													labelFormatter={function (value) {
 														return ``;
@@ -306,8 +324,8 @@ class App extends React.Component {
 
 }
 
-const kWHFormatter = (value) => {
-	return value + " kWh";
+const kWFormatter = (value) => {
+	return value + " kW";
 }
 
 const marksBatteryStatus = [
