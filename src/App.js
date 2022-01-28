@@ -171,7 +171,7 @@ class App extends React.Component {
 												</FormControl>
 
 												<Typography variant="body1" color="textPrimary">
-													Battery percentage
+													Current battery percentage
 												</Typography>
 
 
